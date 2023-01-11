@@ -1,11 +1,11 @@
 {
   "name": "kivibot-plugin-note",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "QQ 机器人框架 KiviBot 的备忘录插件",
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "directory": "https://github.com/Lhy9601/kivibot-plugin-memo.git"
+    "directory": "https://github.com/Lhy9601/kivibot-plugin-note"
   },
   "scripts": {
     "dev": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",

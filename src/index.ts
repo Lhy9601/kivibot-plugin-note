@@ -37,10 +37,10 @@ enum CMD {
 plugin.onMounted(() => {
   plugin.saveConfig(Object.assign(config, plugin.loadConfig()));
 
-  if (!config.user.includes(plugin.mainAdmin)) {
-    config.user.push(plugin.mainAdmin);
-    plugin.saveConfig(config);
-  }
+  // if (!config.user.includes(plugin.mainAdmin)) {
+  //   config.user.push(plugin.mainAdmin);
+  //   plugin.saveConfig(config);
+  // }
 
   plugin.onCmd("/note", (event, params) => handleCmd(event, params));
   plugin.onAdminCmd("/note", (event, params) => handleAdminCmd(event, params));
@@ -92,41 +92,39 @@ const handleCmd = (event: AllMessageEvent, params: any) => {
 //主管理可使用：mode addu rmu user
 const handleAdminCmd = (event: AllMessageEvent, params: any) => {
   const [cmd, arg] = params;
-  let result: boolean;
-  switch (cmd) {
-    case CMD.Mode:
-      if (arg == "") {
-        event.reply(`当前模式：${config.mode}`);
-      }
-      if (
-        arg == Authority.admin ||
-        arg == Authority.all ||
-        arg == Authority.list
-      ) {
-        config.mode = arg;
-        return event.reply("已修改模式，重启插件生效~", true);
-      }
-    case CMD.AddUser:
-      result = AddUser(parseInt(arg));
-      if (result) {
-        return event.reply("已添加该号码", true);
-      } else {
-        return event.reply("号码格式不正确", true);
-      }
-    case CMD.RemoveUser:
-      result = RemoveUser(parseInt(arg));
-      if (result) {
-      }
+  if (cmd == CMD.Mode) {
+    if (arg == undefined) {
+      event.reply(`当前模式：${config.mode}`);
+    } else if (
+      arg == Authority.admin ||
+      arg == Authority.all ||
+      arg == Authority.list
+    ) {
+      config.mode = arg;
+      return event.reply("已修改模式，重启插件生效~", true);
+    }
+  } else if (cmd == CMD.AddUser) {
+    const result = AddUser(parseInt(arg));
+    if (result) {
+      return event.reply("已添加该号码", true);
+    } else {
+      return event.reply("号码格式不正确", true);
+    }
+  } else if (cmd == CMD.RemoveUser) {
+    const result = RemoveUser(parseInt(arg));
+    if (result) {
       return event.reply("已删除该号码", true);
-    case CMD.User:
+    }
+  } else if (CMD.User) {
+    if (config.user.length > 0) {
       let message = "用户列表：\n";
-      if (config.user.length > 0) {
-        for (let i = 0; i < config.user.length; i++) {
-          message += `${i + 1}. ${config.user[i]}\n`;
-        }
+      for (let i = 0; i < config.user.length; i++) {
+        message += `${i + 1}. ${config.user[i]}\n`;
       }
-    default:
-      break;
+      return event.reply(message, true);
+    } else {
+      return event.reply("权限用户列表为空", true);
+    }
   }
 };
 
@@ -197,7 +195,7 @@ const AddUser = (QQ: number) => {
 };
 
 const RemoveUser = (QQ: number) => {
-  if (config.user.includes(QQ)) {
+  if (config.user.includes(QQ) && QQ != plugin.mainAdmin) {
     pull(config.user, QQ);
     return true;
   } else {
@@ -208,6 +206,7 @@ const RemoveUser = (QQ: number) => {
 //是否有权限使用
 const isAuthorized = (QQ: number) => {
   return (
+    QQ == plugin.mainAdmin ||
     config.mode == Authority.all ||
     (config.mode == Authority.list && config.user.includes(QQ)) ||
     (config.mode == Authority.admin && QQ == plugin.mainAdmin)
